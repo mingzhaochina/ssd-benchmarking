@@ -2145,90 +2145,91 @@ void VisualizeBBox(const vector<cv::Mat>& images, const Blob<Dtype>* detections,
   if (num_det == 0 || num_img == 0) {
     return;
   }
-  // Comute FPS.
+  // Compute FPS.
   float fps = num_img / (static_cast<double>(clock() - start_clock) /
           CLOCKS_PER_SEC);
+  std::cout << "FPS: " << fps << std::endl;
 
-  const Dtype* detections_data = detections->cpu_data();
-  const int width = images[0].cols;
-  const int height = images[0].rows;
-  vector<LabelBBox> all_detections(num_img);
-  for (int i = 0; i < num_det; ++i) {
-    const int img_idx = detections_data[i * 7];
-    CHECK_LT(img_idx, num_img);
-    const int label = detections_data[i * 7 + 1];
-    const float score = detections_data[i * 7 + 2];
-    if (score < threshold) {
-      continue;
-    }
-    NormalizedBBox bbox;
-    bbox.set_xmin(detections_data[i * 7 + 3] * width);
-    bbox.set_ymin(detections_data[i * 7 + 4] * height);
-    bbox.set_xmax(detections_data[i * 7 + 5] * width);
-    bbox.set_ymax(detections_data[i * 7 + 6] * height);
-    bbox.set_score(score);
-    all_detections[img_idx][label].push_back(bbox);
-  }
+  // const Dtype* detections_data = detections->cpu_data();
+  // const int width = images[0].cols;
+  // const int height = images[0].rows;
+  // vector<LabelBBox> all_detections(num_img);
+  // for (int i = 0; i < num_det; ++i) {
+  //   const int img_idx = detections_data[i * 7];
+  //   CHECK_LT(img_idx, num_img);
+  //   const int label = detections_data[i * 7 + 1];
+  //   const float score = detections_data[i * 7 + 2];
+  //   if (score < threshold) {
+  //     continue;
+  //   }
+  //   NormalizedBBox bbox;
+  //   bbox.set_xmin(detections_data[i * 7 + 3] * width);
+  //   bbox.set_ymin(detections_data[i * 7 + 4] * height);
+  //   bbox.set_xmax(detections_data[i * 7 + 5] * width);
+  //   bbox.set_ymax(detections_data[i * 7 + 6] * height);
+  //   bbox.set_score(score);
+  //   all_detections[img_idx][label].push_back(bbox);
+  // }
 
-  int fontface = cv::FONT_HERSHEY_SIMPLEX;
-  double scale = 1;
-  int thickness = 2;
-  int baseline = 0;
-  char buffer[50];
-  for (int i = 0; i < num_img; ++i) {
-    cv::Mat image = images[i];
-    // Show FPS.
-    snprintf(buffer, sizeof(buffer), "FPS: %.2f", fps);
-    cv::Size text = cv::getTextSize(buffer, fontface, scale, thickness,
-                                    &baseline);
-    cv::rectangle(image, cv::Point(0, 0),
-                  cv::Point(text.width, text.height + baseline),
-                  CV_RGB(255, 255, 255), CV_FILLED);
-    cv::putText(image, buffer, cv::Point(0, text.height + baseline / 2.),
-                fontface, scale, CV_RGB(0, 0, 0), thickness, 8);
-    // Draw bboxes.
-    for (map<int, vector<NormalizedBBox> >::iterator it =
-         all_detections[i].begin(); it != all_detections[i].end(); ++it) {
-      int label = it->first;
-      string label_name = "Unknown";
-      if (label_to_display_name.find(label) != label_to_display_name.end()) {
-        label_name = label_to_display_name.find(label)->second;
-      }
-      CHECK_LT(label, colors.size());
-      const cv::Scalar& color = colors[label];
-      const vector<NormalizedBBox>& bboxes = it->second;
-      for (int j = 0; j < bboxes.size(); ++j) {
-        cv::Point top_left_pt(bboxes[j].xmin(), bboxes[j].ymin());
-        cv::Point bottom_right_pt(bboxes[j].xmax(), bboxes[j].ymax());
-        cv::rectangle(image, top_left_pt, bottom_right_pt, color, 4);
-        cv::Point bottom_left_pt(bboxes[j].xmin(), bboxes[j].ymax());
-        snprintf(buffer, sizeof(buffer), "%s: %.2f", label_name.c_str(),
-                 bboxes[j].score());
-        cv::Size text = cv::getTextSize(buffer, fontface, scale, thickness,
-                                        &baseline);
-        cv::rectangle(
-            image, bottom_left_pt + cv::Point(0, 0),
-            bottom_left_pt + cv::Point(text.width, -text.height-baseline),
-            color, CV_FILLED);
-        cv::putText(image, buffer, bottom_left_pt - cv::Point(0, baseline),
-                    fontface, scale, CV_RGB(0, 0, 0), thickness, 8);
-      }
-    }
-    // Save result if required.
-    if (!save_file.empty()) {
-      if (!cap_out.isOpened()) {
-        cv::Size size(image.size().width, image.size().height);
-        cv::VideoWriter outputVideo(save_file, CV_FOURCC('D', 'I', 'V', 'X'),
-            30, size, true);
-        cap_out = outputVideo;
-      }
-      cap_out.write(image);
-    }
-    cv::imshow("detections", image);
-    if (cv::waitKey(1) == 27) {
-      raise(SIGINT);
-    }
-  }
+  // int fontface = cv::FONT_HERSHEY_SIMPLEX;
+  // double scale = 1;
+  // int thickness = 2;
+  // int baseline = 0;
+  // char buffer[50];
+  // for (int i = 0; i < num_img; ++i) {
+  //   cv::Mat image = images[i];
+  //   // Show FPS.
+  //   snprintf(buffer, sizeof(buffer), "FPS: %.2f", fps);
+  //   cv::Size text = cv::getTextSize(buffer, fontface, scale, thickness,
+  //                                   &baseline);
+  //   cv::rectangle(image, cv::Point(0, 0),
+  //                 cv::Point(text.width, text.height + baseline),
+  //                 CV_RGB(255, 255, 255), CV_FILLED);
+  //   cv::putText(image, buffer, cv::Point(0, text.height + baseline / 2.),
+  //               fontface, scale, CV_RGB(0, 0, 0), thickness, 8);
+  //   // Draw bboxes.
+  //   for (map<int, vector<NormalizedBBox> >::iterator it =
+  //        all_detections[i].begin(); it != all_detections[i].end(); ++it) {
+  //     int label = it->first;
+  //     string label_name = "Unknown";
+  //     if (label_to_display_name.find(label) != label_to_display_name.end()) {
+  //       label_name = label_to_display_name.find(label)->second;
+  //     }
+  //     CHECK_LT(label, colors.size());
+  //     const cv::Scalar& color = colors[label];
+  //     const vector<NormalizedBBox>& bboxes = it->second;
+  //     for (int j = 0; j < bboxes.size(); ++j) {
+  //       cv::Point top_left_pt(bboxes[j].xmin(), bboxes[j].ymin());
+  //       cv::Point bottom_right_pt(bboxes[j].xmax(), bboxes[j].ymax());
+  //       cv::rectangle(image, top_left_pt, bottom_right_pt, color, 4);
+  //       cv::Point bottom_left_pt(bboxes[j].xmin(), bboxes[j].ymax());
+  //       snprintf(buffer, sizeof(buffer), "%s: %.2f", label_name.c_str(),
+  //                bboxes[j].score());
+  //       cv::Size text = cv::getTextSize(buffer, fontface, scale, thickness,
+  //                                       &baseline);
+  //       cv::rectangle(
+  //           image, bottom_left_pt + cv::Point(0, 0),
+  //           bottom_left_pt + cv::Point(text.width, -text.height-baseline),
+  //           color, CV_FILLED);
+  //       cv::putText(image, buffer, bottom_left_pt - cv::Point(0, baseline),
+  //                   fontface, scale, CV_RGB(0, 0, 0), thickness, 8);
+  //     }
+  //   }
+  //   // Save result if required.
+  //   if (!save_file.empty()) {
+  //     if (!cap_out.isOpened()) {
+  //       cv::Size size(image.size().width, image.size().height);
+  //       cv::VideoWriter outputVideo(save_file, CV_FOURCC('D', 'I', 'V', 'X'),
+  //           30, size, true);
+  //       cap_out = outputVideo;
+  //     }
+  //     cap_out.write(image);
+  //   }
+  //   // cv::imshow("detections", image);
+  //   // if (cv::waitKey(1) == 27) {
+  //   //   raise(SIGINT);
+  //   // }
+  // }
   start_clock = clock();
 }
 
