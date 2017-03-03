@@ -68,6 +68,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--video_in', required=True, help='Video input filename. DO NOT confuse with video_out')
     parser.add_argument('--dim', type=int, choices=[300, 512], required=True, help='SSD300 (300) or SSD512 (512).')
+    parser.add_argument('--width', type=int, required=True, help='Video width')
+    parser.add_argument('--height', type=int, required=True, help='Video height')
+    parser.add_argument('--batch_size', type=int, required=True, help='Batch size to send to GPU')
     args = parser.parse_args()
 
     ### Modify the following parameters accordingly ###
@@ -106,12 +109,12 @@ def main():
     # Defining which GPUs to use.
     gpus = "0"
     # Number of frames to be processed per batch.
-    test_batch_size = 1
+    test_batch_size = args.batch_size
     # Only display high quality detections whose scores are higher than a threshold.
     visualize_threshold = 0.3
     # Size of video image.
-    video_width = 1280
-    video_height = 720
+    video_width = args.width
+    video_height = args.height
     # Scale the image size for display.
     scale = 0.8
 
